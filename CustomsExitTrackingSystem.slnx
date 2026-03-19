@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CustomsExitTracking.ServiceA.Api/CustomsExitTracking.ServiceA.Api.csproj" />
+    <Project Path="src/CustomsExitTracking.ServiceB.Api/CustomsExitTracking.ServiceB.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CustomsExitTracking.ServiceA.Tests/CustomsExitTracking.ServiceA.Tests.csproj" />
+    <Project Path="tests/CustomsExitTracking.ServiceB.Tests/CustomsExitTracking.ServiceB.Tests.csproj" />
+  </Folder>
+</Solution>
