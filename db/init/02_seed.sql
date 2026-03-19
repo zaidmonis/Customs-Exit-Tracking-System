@@ -1,0 +1,43 @@
+INSERT ALL
+    INTO person_identity (person_id, national_id, full_name, date_of_birth, nationality_code, gender, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('11111111-1111-1111-1111-111111111111', '-', '')), 'MY9001010001', 'Ahmad Firdaus bin Rahman', DATE '1990-01-01', 'MYS', 'M', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO person_identity (person_id, national_id, full_name, date_of_birth, nationality_code, gender, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('22222222-2222-2222-2222-222222222222', '-', '')), 'MY9203150002', 'Nur Aisyah binti Salleh', DATE '1992-03-15', 'MYS', 'F', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO person_identity (person_id, national_id, full_name, date_of_birth, nationality_code, gender, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('33333333-3333-3333-3333-333333333333', '-', '')), 'SG8807200003', 'Tan Wei Ming', DATE '1988-07-20', 'SGP', 'M', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO person_identity (person_id, national_id, full_name, date_of_birth, nationality_code, gender, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('44444444-4444-4444-4444-444444444444', '-', '')), 'TH9509050004', 'Somsak Chaiyaporn', DATE '1995-09-05', 'THA', 'M', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO person_identity (person_id, national_id, full_name, date_of_birth, nationality_code, gender, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('55555555-5555-5555-5555-555555555555', '-', '')), 'ID9101120005', 'Dewi Lestari', DATE '1991-01-12', 'IDN', 'F', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO person_identity (person_id, national_id, full_name, date_of_birth, nationality_code, gender, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('66666666-6666-6666-6666-666666666666', '-', '')), 'VN8704300006', 'Nguyen Minh Anh', DATE '1987-04-30', 'VNM', 'F', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO person_identity (person_id, national_id, full_name, date_of_birth, nationality_code, gender, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('77777777-7777-7777-7777-777777777777', '-', '')), 'CN9308080007', 'Li Jun', DATE '1993-08-08', 'CHN', 'M', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO person_identity (person_id, national_id, full_name, date_of_birth, nationality_code, gender, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('88888888-8888-8888-8888-888888888888', '-', '')), 'IN9602220008', 'Ananya Sharma', DATE '1996-02-22', 'IND', 'F', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO person_identity (person_id, national_id, full_name, date_of_birth, nationality_code, gender, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('99999999-9999-9999-9999-999999999999', '-', '')), 'JP8506110009', 'Sato Haruka', DATE '1985-06-11', 'JPN', 'F', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO person_identity (person_id, national_id, full_name, date_of_birth, nationality_code, gender, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '-', '')), 'US8901010010', 'Michael James Carter', DATE '1989-01-01', 'USA', 'M', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+SELECT 1 FROM dual;
+
+INSERT ALL
+    INTO exit_record (exit_id, person_id, departed_at, from_country_code, to_country_code, port_of_exit, travel_doc_no, purpose, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('e1111111-1111-1111-1111-111111111111', '-', '')), HEXTORAW(REPLACE('11111111-1111-1111-1111-111111111111', '-', '')), TIMESTAMP '2025-11-12 07:40:00', 'MYS', 'SGP', 'PEN Airport', 'MY9001010001', 'Business', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO exit_record (exit_id, person_id, departed_at, from_country_code, to_country_code, port_of_exit, travel_doc_no, purpose, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('e1111111-1111-1111-1111-111111111112', '-', '')), HEXTORAW(REPLACE('11111111-1111-1111-1111-111111111111', '-', '')), TIMESTAMP '2025-12-03 18:25:00', 'MYS', 'THA', 'KLIA', 'MY9001010001', 'Leisure', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO exit_record (exit_id, person_id, departed_at, from_country_code, to_country_code, port_of_exit, travel_doc_no, purpose, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('e1111111-1111-1111-1111-111111111113', '-', '')), HEXTORAW(REPLACE('11111111-1111-1111-1111-111111111111', '-', '')), TIMESTAMP '2026-01-10 09:10:00', 'MYS', 'IDN', 'PEN Ferry Terminal', 'MY9001010001', 'Leisure', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO exit_record (exit_id, person_id, departed_at, from_country_code, to_country_code, port_of_exit, travel_doc_no, purpose, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('e1111111-1111-1111-1111-111111111114', '-', '')), HEXTORAW(REPLACE('11111111-1111-1111-1111-111111111111', '-', '')), TIMESTAMP '2026-02-08 06:55:00', 'MYS', 'VNM', 'KLIA', 'MY9001010001', 'Business', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO exit_record (exit_id, person_id, departed_at, from_country_code, to_country_code, port_of_exit, travel_doc_no, purpose, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('e1111111-1111-1111-1111-111111111115', '-', '')), HEXTORAW(REPLACE('11111111-1111-1111-1111-111111111111', '-', '')), TIMESTAMP '2026-03-01 10:20:00', 'MYS', 'SGP', 'PEN Airport', 'MY9001010001', 'Business', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO exit_record (exit_id, person_id, departed_at, from_country_code, to_country_code, port_of_exit, travel_doc_no, purpose, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('e2222222-2222-2222-2222-222222222221', '-', '')), HEXTORAW(REPLACE('22222222-2222-2222-2222-222222222222', '-', '')), TIMESTAMP '2025-12-15 13:00:00', 'MYS', 'THA', 'KLIA', 'MY9203150002', 'Leisure', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO exit_record (exit_id, person_id, departed_at, from_country_code, to_country_code, port_of_exit, travel_doc_no, purpose, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('e2222222-2222-2222-2222-222222222222', '-', '')), HEXTORAW(REPLACE('22222222-2222-2222-2222-222222222222', '-', '')), TIMESTAMP '2026-02-05 14:15:00', 'MYS', 'SGP', 'PEN Airport', 'MY9203150002', 'Family Visit', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INTO exit_record (exit_id, person_id, departed_at, from_country_code, to_country_code, port_of_exit, travel_doc_no, purpose, created_at, updated_at)
+    VALUES (HEXTORAW(REPLACE('e3333333-3333-3333-3333-333333333333', '-', '')), HEXTORAW(REPLACE('33333333-3333-3333-3333-333333333333', '-', '')), TIMESTAMP '2026-01-22 20:05:00', 'SGP', 'MYS', 'Changi Airport', 'SG8807200003', 'Work', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+SELECT 1 FROM dual;
+
+COMMIT;

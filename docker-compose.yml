@@ -6,7 +6,7 @@ services:
       ORACLE_PASSWORD: ${ORACLE_ADMIN_PASSWORD:-oracle_admin_password}
       APP_USER: ${ORACLE_APP_USER:-customs_app}
       APP_USER_PASSWORD: ${ORACLE_APP_PASSWORD:-PasswordABC123!@}
-      ORACLE_DATABASE: ${ORACLE_DATABASE:-FREEPDB1}
+      ORACLE_DATABASE: ${ORACLE_DATABASE:-CUSTOMSDB}
     ports:
       - "1521:1521"
     healthcheck:
@@ -17,6 +17,7 @@ services:
       start_period: 40s
     volumes:
       - oracle-data:/opt/oracle/oradata
+      - ./db/init:/container-entrypoint-initdb.d
     networks:
       - external-net
       - internal-net
@@ -29,7 +30,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_HTTP_PORTS: 8080
-      ConnectionStrings__Oracle: Data Source=oracle:1521/${ORACLE_DATABASE:-FREEPDB1};User Id=${ORACLE_APP_USER:-customs_app};Password=${ORACLE_APP_PASSWORD:-PasswordABC123!@};
+      ConnectionStrings__Oracle: Data Source=oracle:1521/${ORACLE_DATABASE:-CUSTOMSDB};User Id=${ORACLE_APP_USER:-customs_app};Password=${ORACLE_APP_PASSWORD:-PasswordABC123!@};
       ServiceB__BaseUrl: http://service-b:8080
     depends_on:
       oracle:
@@ -48,7 +49,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_HTTP_PORTS: 8080
-      ConnectionStrings__Oracle: Data Source=oracle:1521/${ORACLE_DATABASE:-FREEPDB1};User Id=${ORACLE_APP_USER:-customs_app};Password=${ORACLE_APP_PASSWORD:-PasswordABC123!@};
+      ConnectionStrings__Oracle: Data Source=oracle:1521/${ORACLE_DATABASE:-CUSTOMSDB};User Id=${ORACLE_APP_USER:-customs_app};Password=${ORACLE_APP_PASSWORD:-PasswordABC123!@};
     depends_on:
       oracle:
         condition: service_healthy
