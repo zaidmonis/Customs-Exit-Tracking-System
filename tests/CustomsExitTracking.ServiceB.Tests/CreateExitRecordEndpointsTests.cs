@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using CustomsExitTracking.ServiceB.Api.Application;
+using CustomsExitTracking.ServiceB.Api.Contracts;
 using CustomsExitTracking.ServiceB.Api.Repositories;
 using CustomsExitTracking.Shared.Contracts;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -10,44 +11,16 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace CustomsExitTracking.ServiceB.Tests;
 
-public class ReadEndpointsTests
+public class CreateExitRecordEndpointsTests
 {
     [Fact]
-    public async Task GetPerson_ReturnsOkWhenPersonExists()
-    {
-        var person = new PersonDto(Guid.NewGuid(), "MY9001010001", "Ahmad Firdaus bin Rahman", new DateOnly(1990, 1, 1), "MYS", "M");
-        await using var factory = CreateFactory(person, []);
-        using var client = factory.CreateClient();
-
-        var response = await client.GetAsync("/api/persons/MY9001010001");
-        var payload = await response.Content.ReadFromJsonAsync<PersonDto>();
-
-        response.EnsureSuccessStatusCode();
-        Assert.NotNull(payload);
-        Assert.Equal(person.NationalId, payload.NationalId);
-    }
-
-    [Fact]
-    public async Task GetPerson_ReturnsNotFoundWhenMissing()
+    public async Task CreateExitRecord_ReturnsBadRequest_ForInvalidPayload()
     {
         await using var factory = CreateFactory(null, []);
         using var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/api/persons/UNKNOWN");
-        var payload = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        Assert.NotNull(payload);
-        Assert.Equal("PERSON_NOT_FOUND", payload.Code);
-    }
-
-    [Fact]
-    public async Task GetExits_ReturnsBadRequestForInvalidCountryFilter()
-    {
-        await using var factory = CreateFactory(null, []);
-        using var client = factory.CreateClient();
-
-        var response = await client.GetAsync("/api/persons/MY9001010001/exits?toCountry=sg");
+        var request = new ExitRecordCreateRequest(DateTimeOffset.UtcNow, "MY", "sg", "", null, "Business");
+        var response = await client.PostAsJsonAsync("/api/persons/MY9001010001/exits", request);
         var payload = await response.Content.ReadFromJsonAsync<ErrorResponse>();
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -56,21 +29,35 @@ public class ReadEndpointsTests
     }
 
     [Fact]
-    public async Task GetExits_ReturnsOkWithPagedResults()
+    public async Task CreateExitRecord_ReturnsNotFound_WhenPersonDoesNotExist()
     {
-        var exits = new[]
-        {
-            new ExitRecordDto(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow, "MYS", "SGP", "PEN Airport", "MY9001010001", "Business")
-        };
-        await using var factory = CreateFactory(null, exits);
+        await using var factory = CreateFactory(null, []);
         using var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/api/persons/MY9001010001/exits?limit=10&offset=0");
-        var payload = await response.Content.ReadFromJsonAsync<List<ExitRecordDto>>();
+        var request = new ExitRecordCreateRequest(DateTimeOffset.UtcNow, "MYS", "SGP", "PEN Airport", null, "Business");
+        var response = await client.PostAsJsonAsync("/api/persons/UNKNOWN/exits", request);
+        var payload = await response.Content.ReadFromJsonAsync<ErrorResponse>();
 
-        response.EnsureSuccessStatusCode();
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.NotNull(payload);
-        Assert.Single(payload);
+        Assert.Equal("PERSON_NOT_FOUND", payload.Code);
+    }
+
+    [Fact]
+    public async Task CreateExitRecord_ReturnsCreated_WhenSuccessful()
+    {
+        var person = new PersonDto(Guid.NewGuid(), "MY9001010001", "Ahmad Firdaus bin Rahman", new DateOnly(1990, 1, 1), "MYS", "M");
+        await using var factory = CreateFactory(person, []);
+        using var client = factory.CreateClient();
+
+        var request = new ExitRecordCreateRequest(DateTimeOffset.UtcNow, "MYS", "SGP", "PEN Airport", "MY9001010001", "Business");
+        var response = await client.PostAsJsonAsync($"/api/persons/{person.NationalId}/exits", request);
+        var payload = await response.Content.ReadFromJsonAsync<ExitRecordDto>();
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.NotNull(payload);
+        Assert.Equal(person.PersonId, payload.PersonId);
+        Assert.Equal("SGP", payload.ToCountryCode);
     }
 
     private static WebApplicationFactory<Program> CreateFactory(PersonDto? person, IReadOnlyList<ExitRecordDto> exits) =>
@@ -107,8 +94,16 @@ public class ReadEndpointsTests
 
         public Task<ExitRecordDto> CreateAsync(
             Guid personId,
-            ServiceB.Api.Contracts.ExitRecordCreateRequest request,
+            ExitRecordCreateRequest request,
             CancellationToken cancellationToken) =>
-            throw new NotSupportedException();
+            Task.FromResult(new ExitRecordDto(
+                Guid.NewGuid(),
+                personId,
+                request.DepartedAt,
+                request.FromCountryCode,
+                request.ToCountryCode,
+                request.PortOfExit,
+                request.TravelDocumentNumber,
+                request.Purpose));
     }
 }

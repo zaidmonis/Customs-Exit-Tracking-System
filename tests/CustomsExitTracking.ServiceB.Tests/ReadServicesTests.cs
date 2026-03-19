@@ -18,13 +18,13 @@ public class ReadServicesTests
     }
 
     [Fact]
-    public async Task ExitHistoryReadService_ReturnsRepositoryResults()
+    public async Task ExitRecordService_ReturnsRepositoryResults()
     {
         var expected = new[]
         {
             new ExitRecordDto(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow, "MYS", "SGP", "PEN Airport", "MY9001010001", "Business")
         };
-        var service = new ExitHistoryReadService(new StubExitRecordReadRepository(expected));
+        var service = new ExitRecordService(new StubPersonReadRepository(null), new StubExitRecordRepository(expected));
 
         var result = await service.GetByNationalIdAsync("MY9001010001", new ExitRecordQueryRequest(null, null, null), CancellationToken.None);
 
@@ -38,12 +38,18 @@ public class ReadServicesTests
             Task.FromResult(person);
     }
 
-    private sealed class StubExitRecordReadRepository(IReadOnlyList<ExitRecordDto> results) : IExitRecordReadRepository
+    private sealed class StubExitRecordRepository(IReadOnlyList<ExitRecordDto> results) : IExitRecordRepository
     {
         public Task<IReadOnlyList<ExitRecordDto>> GetByNationalIdAsync(
             string nationalId,
             ExitRecordQueryRequest request,
             CancellationToken cancellationToken) =>
             Task.FromResult(results);
+
+        public Task<ExitRecordDto> CreateAsync(
+            Guid personId,
+            ServiceB.Api.Contracts.ExitRecordCreateRequest request,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
     }
 }

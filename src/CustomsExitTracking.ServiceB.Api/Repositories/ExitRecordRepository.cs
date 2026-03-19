@@ -1,10 +1,12 @@
+using CustomsExitTracking.ServiceB.Api.Contracts;
 using CustomsExitTracking.ServiceB.Api.Persistence;
+using CustomsExitTracking.ServiceB.Api.Persistence.Entities;
 using CustomsExitTracking.Shared.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace CustomsExitTracking.ServiceB.Api.Repositories;
 
-public sealed class ExitRecordReadRepository(CustomsDbContext dbContext) : IExitRecordReadRepository
+public sealed class ExitRecordRepository(CustomsDbContext dbContext) : IExitRecordRepository
 {
     public async Task<IReadOnlyList<ExitRecordDto>> GetByNationalIdAsync(
         string nationalId,
@@ -47,5 +49,38 @@ public sealed class ExitRecordReadRepository(CustomsDbContext dbContext) : IExit
                 x.TravelDocumentNumber,
                 x.Purpose))
             .ToArray();
+    }
+
+    public async Task<ExitRecordDto> CreateAsync(
+        Guid personId,
+        ExitRecordCreateRequest request,
+        CancellationToken cancellationToken)
+    {
+        var entity = new ExitRecordEntity
+        {
+            ExitId = Guid.NewGuid(),
+            PersonId = personId,
+            DepartedAt = request.DepartedAt.UtcDateTime,
+            FromCountryCode = request.FromCountryCode,
+            ToCountryCode = request.ToCountryCode,
+            PortOfExit = request.PortOfExit,
+            TravelDocumentNumber = request.TravelDocumentNumber,
+            Purpose = request.Purpose,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        dbContext.ExitRecords.Add(entity);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return new ExitRecordDto(
+            entity.ExitId,
+            entity.PersonId,
+            new DateTimeOffset(DateTime.SpecifyKind(entity.DepartedAt, DateTimeKind.Utc)),
+            entity.FromCountryCode,
+            entity.ToCountryCode,
+            entity.PortOfExit,
+            entity.TravelDocumentNumber,
+            entity.Purpose);
     }
 }
