@@ -14,4 +14,14 @@ public interface IExitRecordRepository
         Guid personId,
         ExitRecordCreateRequest request,
         CancellationToken cancellationToken);
+
+    Task<ExitRecordDto?> UpdateAsync(
+        Guid personId,
+        ExitRecordUpdateRequest request,
+        CancellationToken cancellationToken);
+
+    Task<bool> DeleteAsync(
+        Guid personId,
+        Guid exitId,
+        CancellationToken cancellationToken);
 }

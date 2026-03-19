@@ -1,14 +1,14 @@
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 using CustomsExitTracking.Shared.Contracts;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace CustomsExitTracking.ServiceB.Tests;
 
-public sealed class UnitTest1 : IClassFixture<WebApplicationFactory<Program>>
+public sealed class HealthEndpointsTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> factory;
 
-    public UnitTest1(WebApplicationFactory<Program> factory)
+    public HealthEndpointsTests(WebApplicationFactory<Program> factory)
     {
         this.factory = factory;
     }

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using CustomsExitTracking.ServiceB.Api.Application;
+using CustomsExitTracking.ServiceB.Api.Contracts;
 using CustomsExitTracking.ServiceB.Api.Repositories;
 using CustomsExitTracking.Shared.Contracts;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -10,13 +11,13 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace CustomsExitTracking.ServiceB.Tests;
 
-public class ReadEndpointsTests
+public class PersonEndpointsTests
 {
     [Fact]
     public async Task GetPerson_ReturnsOkWhenPersonExists()
     {
-        var person = new PersonDto(Guid.NewGuid(), "MY9001010001", "Ahmad Firdaus bin Rahman", new DateOnly(1990, 1, 1), "MYS", "M");
-        await using var factory = CreateFactory(person, []);
+        var person = TestData.CreatePerson();
+        await using var factory = CreateFactory(person);
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/api/persons/MY9001010001");
@@ -30,7 +31,7 @@ public class ReadEndpointsTests
     [Fact]
     public async Task GetPerson_ReturnsNotFoundWhenMissing()
     {
-        await using var factory = CreateFactory(null, []);
+        await using var factory = CreateFactory(null);
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/api/persons/UNKNOWN");
@@ -41,39 +42,7 @@ public class ReadEndpointsTests
         Assert.Equal("PERSON_NOT_FOUND", payload.Code);
     }
 
-    [Fact]
-    public async Task GetExits_ReturnsBadRequestForInvalidCountryFilter()
-    {
-        await using var factory = CreateFactory(null, []);
-        using var client = factory.CreateClient();
-
-        var response = await client.GetAsync("/api/persons/MY9001010001/exits?toCountry=sg");
-        var payload = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.NotNull(payload);
-        Assert.Equal("VALIDATION_ERROR", payload.Code);
-    }
-
-    [Fact]
-    public async Task GetExits_ReturnsOkWithPagedResults()
-    {
-        var exits = new[]
-        {
-            new ExitRecordDto(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow, "MYS", "SGP", "PEN Airport", "MY9001010001", "Business")
-        };
-        await using var factory = CreateFactory(null, exits);
-        using var client = factory.CreateClient();
-
-        var response = await client.GetAsync("/api/persons/MY9001010001/exits?limit=10&offset=0");
-        var payload = await response.Content.ReadFromJsonAsync<List<ExitRecordDto>>();
-
-        response.EnsureSuccessStatusCode();
-        Assert.NotNull(payload);
-        Assert.Single(payload);
-    }
-
-    private static WebApplicationFactory<Program> CreateFactory(PersonDto? person, IReadOnlyList<ExitRecordDto> exits) =>
+    private static WebApplicationFactory<Program> CreateFactory(PersonDto? person) =>
         new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
@@ -85,7 +54,7 @@ public class ReadEndpointsTests
                     services.RemoveAll<ExitRecordService>();
 
                     services.AddSingleton<IPersonReadRepository>(new StubPersonReadRepository(person));
-                    services.AddSingleton<IExitRecordRepository>(new StubExitRecordRepository(exits));
+                    services.AddSingleton<IExitRecordRepository>(new StubExitRecordRepository([], true));
                     services.AddScoped<PersonReadService>();
                     services.AddScoped<ExitRecordService>();
                 });
@@ -97,7 +66,7 @@ public class ReadEndpointsTests
             Task.FromResult(person);
     }
 
-    private sealed class StubExitRecordRepository(IReadOnlyList<ExitRecordDto> exits) : IExitRecordRepository
+    private sealed class StubExitRecordRepository(IReadOnlyList<ExitRecordDto> exits, bool deleteResult) : IExitRecordRepository
     {
         public Task<IReadOnlyList<ExitRecordDto>> GetByNationalIdAsync(
             string nationalId,
@@ -107,8 +76,17 @@ public class ReadEndpointsTests
 
         public Task<ExitRecordDto> CreateAsync(
             Guid personId,
-            ServiceB.Api.Contracts.ExitRecordCreateRequest request,
+            ExitRecordCreateRequest request,
             CancellationToken cancellationToken) =>
             throw new NotSupportedException();
+
+        public Task<ExitRecordDto?> UpdateAsync(
+            Guid personId,
+            ExitRecordUpdateRequest request,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
+
+        public Task<bool> DeleteAsync(Guid personId, Guid exitId, CancellationToken cancellationToken) =>
+            Task.FromResult(deleteResult);
     }
 }

@@ -83,4 +83,56 @@ public sealed class ExitRecordRepository(CustomsDbContext dbContext) : IExitReco
             entity.TravelDocumentNumber,
             entity.Purpose);
     }
+
+    public async Task<ExitRecordDto?> UpdateAsync(
+        Guid personId,
+        ExitRecordUpdateRequest request,
+        CancellationToken cancellationToken)
+    {
+        var entity = await dbContext.ExitRecords
+            .SingleOrDefaultAsync(x => x.PersonId == personId && x.ExitId == request.ExitId, cancellationToken);
+
+        if (entity is null)
+        {
+            return null;
+        }
+
+        entity.DepartedAt = request.DepartedAt.UtcDateTime;
+        entity.FromCountryCode = request.FromCountryCode;
+        entity.ToCountryCode = request.ToCountryCode;
+        entity.PortOfExit = request.PortOfExit;
+        entity.TravelDocumentNumber = request.TravelDocumentNumber;
+        entity.Purpose = request.Purpose;
+        entity.UpdatedAt = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return new ExitRecordDto(
+            entity.ExitId,
+            entity.PersonId,
+            new DateTimeOffset(DateTime.SpecifyKind(entity.DepartedAt, DateTimeKind.Utc)),
+            entity.FromCountryCode,
+            entity.ToCountryCode,
+            entity.PortOfExit,
+            entity.TravelDocumentNumber,
+            entity.Purpose);
+    }
+
+    public async Task<bool> DeleteAsync(
+        Guid personId,
+        Guid exitId,
+        CancellationToken cancellationToken)
+    {
+        var entity = await dbContext.ExitRecords
+            .SingleOrDefaultAsync(x => x.PersonId == personId && x.ExitId == exitId, cancellationToken);
+
+        if (entity is null)
+        {
+            return false;
+        }
+
+        dbContext.ExitRecords.Remove(entity);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
 }

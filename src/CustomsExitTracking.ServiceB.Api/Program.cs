@@ -38,6 +38,12 @@ app.MapGet("/api/persons/{nationalId}/exits", GetPersonExitsAsync)
 app.MapPost("/api/persons/{nationalId}/exits", CreateExitRecordAsync)
     .WithName("CreateExitRecord");
 
+app.MapPut("/api/persons/{nationalId}/exits/{exitId}", UpdateExitRecordAsync)
+    .WithName("UpdateExitRecord");
+
+app.MapDelete("/api/persons/{nationalId}/exits/{exitId}", DeleteExitRecordAsync)
+    .WithName("DeleteExitRecord");
+
 app.Run();
 
 static async Task<Results<Ok<PersonDto>, NotFound<ErrorResponse>, BadRequest<ErrorResponse>>> GetPersonAsync(
@@ -166,6 +172,87 @@ static async Task<Results<Created<ExitRecordDto>, NotFound<ErrorResponse>, BadRe
     }
 
     return TypedResults.Created($"/api/persons/{nationalId}/exits/{created.ExitId}", created);
+}
+
+static async Task<Results<Ok<ExitRecordDto>, NotFound<ErrorResponse>, BadRequest<ErrorResponse>>> UpdateExitRecordAsync(
+    string nationalId,
+    Guid exitId,
+    CustomsExitTracking.ServiceB.Api.Contracts.ExitRecordUpdateRequest request,
+    ExitRecordService service,
+    CancellationToken cancellationToken)
+{
+    var errors = new Dictionary<string, string[]>();
+
+    if (!RequestValidation.IsNationalIdValid(nationalId))
+    {
+        errors["nationalId"] = ["National ID is required."];
+    }
+
+    if (request.ExitId != exitId)
+    {
+        errors["exitId"] = ["Route exit ID must match request exit ID."];
+    }
+
+    if (!RequestValidation.IsCountryCodeValid(request.FromCountryCode))
+    {
+        errors["fromCountryCode"] = ["From-country code must be a valid ISO alpha-3 code."];
+    }
+
+    if (!RequestValidation.IsCountryCodeValid(request.ToCountryCode))
+    {
+        errors["toCountryCode"] = ["To-country code must be a valid ISO alpha-3 code."];
+    }
+
+    if (string.IsNullOrWhiteSpace(request.PortOfExit))
+    {
+        errors["portOfExit"] = ["Port of exit is required."];
+    }
+
+    if (errors.Count > 0)
+    {
+        return TypedResults.BadRequest(new ErrorResponse(
+            "VALIDATION_ERROR",
+            "The request is invalid.",
+            errors));
+    }
+
+    var updated = await service.UpdateAsync(nationalId, request, cancellationToken);
+    if (updated is null)
+    {
+        return TypedResults.NotFound(new ErrorResponse(
+            "EXIT_RECORD_NOT_FOUND",
+            $"No exit record was found for exit ID '{exitId}' and national ID '{nationalId}'."));
+    }
+
+    return TypedResults.Ok(updated);
+}
+
+static async Task<Results<NoContent, NotFound<ErrorResponse>, BadRequest<ErrorResponse>>> DeleteExitRecordAsync(
+    string nationalId,
+    Guid exitId,
+    ExitRecordService service,
+    CancellationToken cancellationToken)
+{
+    if (!RequestValidation.IsNationalIdValid(nationalId))
+    {
+        return TypedResults.BadRequest(new ErrorResponse(
+            "VALIDATION_ERROR",
+            "The request is invalid.",
+            new Dictionary<string, string[]>
+            {
+                ["nationalId"] = ["National ID is required."]
+            }));
+    }
+
+    var deleted = await service.DeleteAsync(nationalId, exitId, cancellationToken);
+    if (deleted is null || deleted is false)
+    {
+        return TypedResults.NotFound(new ErrorResponse(
+            "EXIT_RECORD_NOT_FOUND",
+            $"No exit record was found for exit ID '{exitId}' and national ID '{nationalId}'."));
+    }
+
+    return TypedResults.NoContent();
 }
 
 static HealthStatusResponse CreateHealthResponse(string status) =>
