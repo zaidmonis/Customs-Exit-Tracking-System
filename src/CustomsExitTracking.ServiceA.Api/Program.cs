@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<CustomsDbContext>(options =>
     options.UseOracle(builder.Configuration.GetConnectionString("Oracle")));
 builder.Services.Configure<ScreeningRulesOptions>(
@@ -34,6 +36,13 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Service A API");
+    options.RoutePrefix = "swagger";
+});
 
 app.MapGet("/health", () => Results.Ok(CreateHealthResponse("healthy")))
     .WithName("GetHealth");

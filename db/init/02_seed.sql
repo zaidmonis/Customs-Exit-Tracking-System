@@ -1,3 +1,6 @@
+ALTER SESSION SET CONTAINER = CUSTOMSDB;
+ALTER SESSION SET CURRENT_SCHEMA = CUSTOMS_APP;
+
 INSERT ALL
     INTO person_identity (person_id, national_id, full_name, date_of_birth, nationality_code, gender, created_at, updated_at)
     VALUES (HEXTORAW(REPLACE('11111111-1111-1111-1111-111111111111', '-', '')), 'MY9001010001', 'Ahmad Firdaus bin Rahman', DATE '1990-01-01', 'MYS', 'M', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
