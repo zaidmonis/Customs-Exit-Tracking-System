@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
-using CustomsExitTracking.ServiceA.Api.Contracts;
 using Microsoft.AspNetCore.Mvc.Testing;
+using CustomsExitTracking.Shared.Contracts;
 
 namespace CustomsExitTracking.ServiceA.Tests;
 

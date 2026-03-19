@@ -1,4 +1,4 @@
-using CustomsExitTracking.ServiceB.Api.Contracts;
+using CustomsExitTracking.Shared.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 

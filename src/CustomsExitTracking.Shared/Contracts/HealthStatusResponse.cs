@@ -1,4 +1,4 @@
-namespace CustomsExitTracking.ServiceA.Api.Contracts;
+namespace CustomsExitTracking.Shared.Contracts;
 
 public sealed record HealthStatusResponse(
     string Service,

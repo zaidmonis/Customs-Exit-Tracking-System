@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CustomsExitTracking.ServiceB.Api\CustomsExitTracking.ServiceB.Api.csproj" />
+    <ProjectReference Include="..\..\src\CustomsExitTracking.Shared\CustomsExitTracking.Shared.csproj" />
   </ItemGroup>
 
 </Project>
