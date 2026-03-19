@@ -1,6 +1,8 @@
 using CustomsExitTracking.ServiceA.Api.Application;
+using CustomsExitTracking.ServiceA.Api.Integrations;
 using CustomsExitTracking.ServiceA.Api.Persistence;
 using CustomsExitTracking.ServiceA.Api.Repositories;
+using CustomsExitTracking.ServiceA.Api.Settings;
 using CustomsExitTracking.Shared.Contracts;
 using CustomsExitTracking.Shared.Validation;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -11,10 +13,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<CustomsDbContext>(options =>
     options.UseOracle(builder.Configuration.GetConnectionString("Oracle")));
+builder.Services.Configure<ScreeningRulesOptions>(
+    builder.Configuration.GetSection(ScreeningRulesOptions.SectionName));
 builder.Services.AddScoped<IPersonReadRepository, PersonReadRepository>();
 builder.Services.AddScoped<IExitRecordReadRepository, ExitRecordReadRepository>();
 builder.Services.AddScoped<PersonReadService>();
 builder.Services.AddScoped<ExitRecordReadService>();
+builder.Services.AddScoped<ExitVerificationService>();
+builder.Services.AddHttpClient<IServiceBClient, ServiceBClient>((serviceProvider, client) =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var baseUrl = configuration["ServiceB:BaseUrl"]
+        ?? throw new InvalidOperationException("ServiceB:BaseUrl is not configured.");
+    client.BaseAddress = new Uri(baseUrl);
+});
 
 var app = builder.Build();
 
@@ -34,6 +46,9 @@ app.MapGet("/api/persons/{nationalId}", GetPersonAsync)
 
 app.MapGet("/api/persons/{nationalId}/exits", GetPersonExitsAsync)
     .WithName("GetExitRecordsByNationalId");
+
+app.MapPost("/api/persons/{nationalId}/verify-and-insert-exit", VerifyAndInsertExitAsync)
+    .WithName("VerifyAndInsertExit");
 
 app.Run();
 
@@ -116,6 +131,46 @@ static async Task<Results<Ok<IReadOnlyList<ExitRecordDto>>, BadRequest<ErrorResp
 
     var records = await service.GetByNationalIdAsync(nationalId, request, cancellationToken);
     return TypedResults.Ok(records);
+}
+
+static async Task<Results<Ok<CustomsExitTracking.ServiceA.Api.Contracts.VerifyAndInsertExitResponse>, BadRequest<ErrorResponse>>> VerifyAndInsertExitAsync(
+    string nationalId,
+    CustomsExitTracking.ServiceA.Api.Contracts.VerifyAndInsertExitRequest request,
+    ExitVerificationService service,
+    CancellationToken cancellationToken)
+{
+    var errors = new Dictionary<string, string[]>();
+
+    if (!RequestValidation.IsNationalIdValid(nationalId))
+    {
+        errors["nationalId"] = ["National ID is required."];
+    }
+
+    if (!RequestValidation.IsCountryCodeValid(request.FromCountryCode))
+    {
+        errors["fromCountryCode"] = ["From-country code must be a valid ISO alpha-3 code."];
+    }
+
+    if (!RequestValidation.IsCountryCodeValid(request.ToCountryCode))
+    {
+        errors["toCountryCode"] = ["To-country code must be a valid ISO alpha-3 code."];
+    }
+
+    if (string.IsNullOrWhiteSpace(request.PortOfExit))
+    {
+        errors["portOfExit"] = ["Port of exit is required."];
+    }
+
+    if (errors.Count > 0)
+    {
+        return TypedResults.BadRequest(new ErrorResponse(
+            "VALIDATION_ERROR",
+            "The request is invalid.",
+            errors));
+    }
+
+    var result = await service.VerifyAndInsertAsync(nationalId, request, cancellationToken);
+    return TypedResults.Ok(result);
 }
 
 static HealthStatusResponse CreateHealthResponse(string status) =>
