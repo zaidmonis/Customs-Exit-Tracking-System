@@ -56,7 +56,7 @@ app.MapGet("/api/persons/{nationalId}", GetPersonAsync)
 app.MapGet("/api/persons/{nationalId}/exits", GetPersonExitsAsync)
     .WithName("GetExitRecordsByNationalId");
 
-app.MapPost("/api/persons/{nationalId}/verify-and-insert-exit", VerifyAndInsertExitAsync)
+app.MapPost("/api/persons/{nationalId}", VerifyAndInsertExitAsync)
     .WithName("VerifyAndInsertExit");
 
 app.Run();

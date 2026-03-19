@@ -21,7 +21,7 @@ public class VerifyAndInsertEndpointsTests
         await using var factory = CreateFactory(null, []);
         using var client = factory.CreateClient();
 
-        var response = await client.PostAsJsonAsync("/api/persons/UNKNOWN/verify-and-insert-exit", CreateRequest());
+        var response = await client.PostAsJsonAsync("/api/persons/UNKNOWN", CreateRequest());
         var payload = await response.Content.ReadFromJsonAsync<VerifyAndInsertExitResponse>();
 
         response.EnsureSuccessStatusCode();
@@ -38,7 +38,7 @@ public class VerifyAndInsertEndpointsTests
         await using var factory = CreateFactory(person, exits);
         using var client = factory.CreateClient();
 
-        var response = await client.PostAsJsonAsync($"/api/persons/{person.NationalId}/verify-and-insert-exit", CreateRequest());
+        var response = await client.PostAsJsonAsync($"/api/persons/{person.NationalId}", CreateRequest());
         var payload = await response.Content.ReadFromJsonAsync<VerifyAndInsertExitResponse>();
 
         response.EnsureSuccessStatusCode();
@@ -55,7 +55,7 @@ public class VerifyAndInsertEndpointsTests
         await using var factory = CreateFactory(person, exits);
         using var client = factory.CreateClient();
 
-        var response = await client.PostAsJsonAsync($"/api/persons/{person.NationalId}/verify-and-insert-exit", CreateRequest());
+        var response = await client.PostAsJsonAsync($"/api/persons/{person.NationalId}", CreateRequest());
         var payload = await response.Content.ReadFromJsonAsync<VerifyAndInsertExitResponse>();
 
         response.EnsureSuccessStatusCode();
@@ -71,7 +71,7 @@ public class VerifyAndInsertEndpointsTests
         using var client = factory.CreateClient();
 
         var response = await client.PostAsJsonAsync(
-            "/api/persons/MY9001010001/verify-and-insert-exit",
+            "/api/persons/MY9001010001",
             new VerifyAndInsertExitRequest(DateTimeOffset.UtcNow, "MY", "sg", "", null, "Business"));
         var payload = await response.Content.ReadFromJsonAsync<ErrorResponse>();
 
