@@ -1,0 +1,47 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore solution
+        run: dotnet restore CustomsExitTrackingSystem.slnx
+
+      - name: Build solution
+        run: dotnet build CustomsExitTrackingSystem.slnx --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test CustomsExitTrackingSystem.slnx --configuration Release --no-build --logger "trx;LogFilePrefix=test-results" --results-directory TestResults
+
+      - name: Upload test result files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/*.trx
+          if-no-files-found: error
+
+      - name: Publish test results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          trx_files: TestResults/*.trx
